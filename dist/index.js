@@ -4979,6 +4979,7 @@ function octokitValidate(octokit) {
 
 Object.defineProperty(exports, "__esModule", { value: true });
 const os = __webpack_require__(87);
+const fs = __webpack_require__(747);
 /**
  * Commands
  *
@@ -4998,6 +4999,12 @@ function issue(name, message) {
     issueCommand(name, {}, message);
 }
 exports.issue = issue;
+function setOutput(properties, message) {
+    const outputPath = process.env.GITHUB_OUTPUT;
+    const cmd = new Command('set-output', properties, message);
+    fs.appendFileSync(outputPath, cmd.toCoreString() + '\n');
+}
+exports.setOutput = setOutput;
 const CMD_PREFIX = '##[';
 class Command {
     constructor(command, properties, message) {
@@ -5028,6 +5035,22 @@ class Command {
         // call .replace() if message is not a string for some reason
         const message = `${this.message || ''}`;
         cmdStr += escapeData(message);
+        return cmdStr;
+    }
+    toCoreString() {
+        let cmdStr = '';
+        for (const key in this.properties) {
+            if (this.properties.hasOwnProperty(key)) {
+                const val = this.properties[key];
+                if (val) {
+                    if ( cmdStr === '' ) {
+                        cmdStr +=`${key}=${escape(`${val || ''}`)}`;
+                    } else {
+                        cmdStr +=`,${key}=${escape(`${val || ''}`)}`;
+                    }
+                }
+            }
+        }
         return cmdStr;
     }
 }
@@ -7091,7 +7114,10 @@ exports.getInput = getInput;
  * @param     value    value to store
  */
 function setOutput(name, value) {
-    command_1.issueCommand('set-output', { name }, value);
+    //command_1.issueCommand('set-output', { name }, value);
+    const info = {};
+    info[name] = value;
+    command_1.setOutput(info, null);
 }
 exports.setOutput = setOutput;
 //-----------------------------------------------------------------------

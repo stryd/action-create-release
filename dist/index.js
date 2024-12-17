@@ -7115,7 +7115,9 @@ exports.getInput = getInput;
  */
 function setOutput(name, value) {
     //command_1.issueCommand('set-output', { name }, value);
-    command_1.setOutput({ name }, value);
+    const info = {};
+    info[name] = value;
+    command_1.setOutput(info, null);
 }
 exports.setOutput = setOutput;
 //-----------------------------------------------------------------------
